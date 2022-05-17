@@ -1,3 +1,5 @@
+// gcc main.cpp -lGL -lGLU -lglut
+
 #include "./freeglut-3.2.1/include/GL/freeglut.h"
 #include <string.h>
 #include <stdarg.h>
@@ -9,8 +11,8 @@ using namespace std;
 #define WINAPI
 typedef unsigned long DWORD;
 typedef short WCHAR;
-typedef void * HANDLE;
-#define MAX_PATH    PATH_MAX
+typedef void *HANDLE;
+#define MAX_PATH PATH_MAX
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
 typedef unsigned int BOOL;
@@ -57,7 +59,8 @@ void stroke_output(GLfloat x, GLfloat y, char *format, ...)
         glutStrokeCharacter(GLUT_STROKE_ROMAN, *p);
     glPopMatrix();
 }
-void satellite(){
+void satellite()
+{
 
     glRotatef(60, 1, 0, 0);
 
@@ -69,16 +72,17 @@ void satellite(){
     glutSolidCube(0.4);
     glPopMatrix();
 
-    // Solar Panels
-
+    // Solar Panels for rotating satellite
+    // Base
     glPushMatrix();
     glColor3f(0.3, 0.3, 0.3);
     glTranslatef(3, 0, 0.0);
-    // glRotatef(45,1,0,0);
+    glRotatef(45, 1, 0, 0);
     glScaled(3.7, 0.0, 1);
     glutSolidCube(0.4);
     glPopMatrix();
 
+    // Top
     glPushMatrix();
     glColor3f(0.2, 0.1, 0.1);
     glTranslatef(3.0, 0, -0.4);
@@ -86,6 +90,7 @@ void satellite(){
     glutSolidSphere(0.3, 50, 50);
     glPopMatrix();
 
+    // bottom
     glPushMatrix();
     glColor3f(0.2, 0.2, 0.1);
     glTranslatef(3.0, 0, 0.4);
@@ -106,7 +111,7 @@ void sat2(double ang)
     // earth
 
     glPushMatrix();
-    glColor3f(0.3, 0.6, 1);
+    glColor3f(0.0f, 0.5f, 0.5f);
     // glScaled(0.8,0.04,0.8);
     // glTranslatef(0.0,0,0.0);
     glutSolidSphere(2.0, 50, 50);
@@ -197,7 +202,8 @@ void sat1()
 
     // Earth
     glPushMatrix();
-    glColor3f(0.2, 0.2, 1);
+    glColor3f(0.1f, 0.1f, 0.0f);
+    ;
     glTranslatef(0, -12, 0);
     // glScaled(0.8,0.04,0.8);
     glutSolidSphere(10.0, 50, 50);
@@ -535,8 +541,8 @@ int main(int argc, char *argv[])
     glEnable(GL_NORMALIZE);
     glutKeyboardFunc(mykey);
     glutCreateMenu(menu);
-    glutAddMenuEntry("Pyramid       's'", 1);
-    glutAddMenuEntry("Reverse Pyramid 'S'", 2);
+    glutAddMenuEntry("Working of Satellite       's'", 1);
+    glutAddMenuEntry("Transmitting Waves 'S'", 2);
     glutAddMenuEntry("Quit            'q'", 5);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
     doInit();

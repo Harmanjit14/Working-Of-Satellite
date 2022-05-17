@@ -1,0 +1,239 @@
+\n
+clc;
+format short;
+
+% Variables ={'x_1','x_2','x_3','s_1','s_2','A_3','sol'};
+% bigmtable=array2table(zcj);
+% bigmtable.Properties.VariableNames(1:size(zcj,2))=Variables;
+
+cost = [2 10 4 5; 6 12 8 11; 3 9 5 7];
+supply = [ 10 25 20];
+demand = [ 25 10 15 5];
+[m,n] = size(cost);
+
+if sum(demand) == sum(supply)
+    fprintf('Problem is balanced')
+else
+    fprintf('Problem is not balaned')
+end
+
+if sum(supply) < sum(demand)
+    cost(end+1,:) = zeros(1, size(supply,2));
+    supply(end+1) = sum(demand)-sum(supply);
+end
+
+if sum(supply) > sum(demand)
+    cost(:,end+1) = zeros(1, size(supply,2));
+    demand(end+1) = sum(supply)-sum(demand);
+end
+
+X = zeros(m,n);
+icost = cost;
+while any(supply ~= 0) || any(demand ~= 0)
+    mincost = min(cost(:)); % Coverts rows to a singlr column to find min
+    [r,c] = find(cost == min(mincost)); % Gives column index where value in minimum then converts to r,c
+    y = min(supply(r),demand(c));
+    [value,index] = max(y);
+    pos_row = r(index);
+    pos_col = c(index);
+    X(pos_row,pos_col) = value;
+    supply(pos_row) = supply(pos_row)-value;
+    demand(pos_col) = demand(pos_col)-value;
+    cost(pos_row,pos_col) = inf;
+end
+
+C = icost.*X;
+fprintf('\nSum = %d',sum(sum(C)));
+
+[m,n] = size(icost);
+bfs = m+n-1;
+
+ansbfs = length(nonzeros(X));
+if bfs==ansbfs
+    fprintf('\nBFS is Non-Degenerate');
+else
+    fprintf('\nBFS is Degenerate');
+end
+
+\n
+% Name: Harmanjit Singh
+% Roll: 101903287
+% Group: 3COE15
+
+% Convert to maximize problem first
+clc;
+Variables={'x1','x2','s1','s2','A3','sol'};
+OVariables={'x1','x2','s1','s2','sol'};
+OrigC=[3 2 0 0 -1 0];
+Info=[1 1 1 0 0 2;1 3 0 1 0 3;1 -1 0 0 1 1];
+BV=[3 4 5];
+
+%PHASE-1
+Cost=[0 0 0 0 -1 0];
+A=Info;
+StartBV=find(Cost<0);
+[BFS,A]=phase(A,BV,Cost,Variables);
+
+%PHASE-2
+A(:,StartBV)=[]; %Removing Artificial var by giving them empty value
+OrigC(:,StartBV)=[]; %Removing Artificial var cost by giving them empty value
+[OptBFS, OptA]=phase(A,BFS,OrigC,OVariables);
+FINAL_BFS=zeros(1,size(A,2));
+FINAL_BFS(OptBFS)=OptA(:,end);
+FINAL_BFS(end)=sum(FINAL_BFS.*OrigC);
+OptimalBFS= array2table(FINAL_BFS);
+OptimalBFS.Properties.VariableNames(1:size(OptimalBFS,2))=OVariables;
+
+function[BFS, A]=phase(A,BV,Cost,Variables)
+    ZjCj=Cost(BV)*A-Cost;
+    RUN= true;
+
+    while RUN
+        ZC=ZjCj(1:end-1);
+
+        if any(ZC<0)
+            fprintf(' The current BFS is not optimal\n')
+            [ent_col,pvt_col]=min(ZC);
+            fprintf('Entering Col =%d \n' , pvt_col);
+            sol=A(:,end);
+            Column=A(:,pvt_col);
+
+            if Column<=0
+                error('LPP is unbounded');
+            else
+                for i=1:size(A,1)
+                    if Column(i)>0
+                        ratio(i)=sol(i)./Column(i);
+                    else
+                        ratio(i)=inf;
+                    end
+                end
+
+            [MinRatio,pvt_row]=min(ratio);
+            fprintf('leaving Row=%d \n', pvt_row);
+            end
+
+            BV(pvt_row)=pvt_col;
+            pvt_key=A(pvt_row,pvt_col);
+            A(pvt_row,:)=A(pvt_row,:)./ pvt_key;
+
+            for i=1:size(A,1)
+                if i~=pvt_row
+                    A(i,:)=A(i,:)-A(i,pvt_col).*A(pvt_row,:);
+                end
+            end
+            ZjCj=ZjCj-ZjCj(pvt_col).*A(pvt_row,:)
+            ZCj=[ZjCj;A]
+            TABLE=array2table(ZCj);
+            TABLE.Properties.VariableNames(1:size(ZCj,2))=Variables
+            BFS(BV)=A(:,end)
+        else
+            RUN=false;
+            fprintf(' Current BFS is Optimal \n');
+            fprintf('Phase End \n')
+            BFS=BV;
+        end
+    end
+end
+
+
+\n
+% Name: Harmanjit Singh
+% Roll: 101903287
+% Group: 3COE15
+
+% Convert to max and all eq to less than sign
+format short 
+clear all 
+clc 
+
+f=0; 
+Variables={'x1','x2','s1','s2','sol'}; 
+Cost=[-3 -2 0 0 0]; 
+Info=[1 1;-1 -2]; 
+b=[1;-3]; 
+s=eye(size(Info,1)); 
+A=[Info s b]; 
+
+
+% Finding Basic variables
+BV=[]; 
+for j=1:size(s,2) 
+    for i=1:size(A,2) 
+        if A(:,i)==s(:,j) 
+            BV=[BV i]; 
+        end 
+    end 
+end 
+
+fprintf('The basic variables are = '); 
+disp(Variables(BV)); 
+
+zjcj=Cost(BV)*A-Cost; 
+ZCj=[zjcj;A];
+
+simpTable=array2table(ZCj); 
+simpTable.Properties.VariableNames(1:size(ZCj,2))=Variables 
+
+run=true; 
+
+while run 
+    sol=A(:,end); 
+    if any(sol<0) 
+        fprintf('The current bfs is not feasible\n'); 
+        [leaVal,pvt_row]=min(sol);
+        
+        fprintf('The leaving row =%d\n',pvt_row); 
+        row=A(pvt_row,1:end-1); 
+        zj=zjcj(:,1:end-1); 
+        f=0; 
+    
+        for i=1:size(row,2) 
+            if row(i)<0 
+                ratio(i)=abs(zj(i)./row(i)); 
+                f=1; 
+            else
+                ratio(i)=inf; 
+            end 
+        end 
+        
+        if f==0 
+            fprintf('the current lpp has infeasible solution\n'); break; 
+    end 
+        
+    [minVal,pvt_col]=min(ratio); 
+    fprintf('Entering variable = %d\n',pvt_col); 
+    
+    BV(pvt_row)=pvt_col; 
+    fprintf('The basic variables are = '); 
+    disp(Variables(BV)); 
+    
+    pvt_key=A(pvt_row,pvt_col); 
+    A(pvt_row,:)=A(pvt_row,:)./pvt_key; 
+
+    for i=1:size(A,1) 
+        if i~=pvt_row 
+            A(i,:)=A(i,:)-A(i,pvt_col).*A(pvt_row,:); 
+        end 
+    end
+    
+    zjcj=Cost(BV)*A-Cost; 
+    ZCj=[zjcj;A]; 
+    simpTable=array2table(ZCj); 
+    simpTable.Properties.VariableNames(1:size(ZCj,2))=Variables 
+    else 
+        fprintf('The current bfs is feasible and optimal\n'); run=false; 
+    end 
+end 
+
+if f==1 
+    final_bfs=zeros(1,size(A,2)); 
+    final_bfs(BV)=A(:,end); 
+    final_bfs(end)=sum(final_bfs.*Cost); 
+    optimal_bfs=array2table(final_bfs); 
+    optimal_bfs.Properties.VariableNames(1:size(optimal_bfs,2))=Variables 
+end
+
+
+/n
+
